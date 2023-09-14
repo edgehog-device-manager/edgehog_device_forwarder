@@ -1,3 +1,6 @@
+# Copyright 2023 SECO Mind Srl
+# SPDX-License-Identifier: Apache-2.0
+
 {
   description = "Server component for remote shell on edgehog devices";
   inputs = {

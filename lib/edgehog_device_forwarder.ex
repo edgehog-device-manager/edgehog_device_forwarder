@@ -1,3 +1,6 @@
+# Copyright 2023 SECO Mind Srl
+# SPDX-License-Identifier: Apache-2.0
+
 defmodule EdgehogDeviceForwarder do
   @moduledoc """
   EdgehogDeviceForwarder keeps the contexts that define your domain

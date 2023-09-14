@@ -1,3 +1,8 @@
+<!---
+  Copyright 2023 SECO Mind Srl
+  SPDX-License-Identifier: Apache-2.0
+-->
+
 # EdgehogDeviceForwarder
 
 To start your Phoenix server:

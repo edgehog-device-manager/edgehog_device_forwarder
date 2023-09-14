@@ -1,3 +1,6 @@
+# Copyright 2023 SECO Mind Srl
+# SPDX-License-Identifier: Apache-2.0
+
 (import
   (
     let lock = builtins.fromJSON (builtins.readFile ./flake.lock); in
