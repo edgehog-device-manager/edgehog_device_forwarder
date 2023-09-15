@@ -12,6 +12,7 @@ defmodule EdgehogDeviceForwarder.Application do
       EdgehogDeviceForwarderWeb.Telemetry,
       {Phoenix.PubSub, name: EdgehogDeviceForwarder.PubSub},
       EdgehogDeviceForwarder.TerminationCallbacks,
+      EdgehogDeviceForwarder.Caches,
       EdgehogDeviceForwarderWeb.Endpoint
     ]
 

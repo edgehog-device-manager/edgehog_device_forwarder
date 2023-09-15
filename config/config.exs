@@ -18,4 +18,8 @@ config :logger, :console,
 
 config :phoenix, :json_library, Jason
 
+config :edgehog_device_forwarder, EdgehogDeviceForwarder.Caches, [
+  {EdgehogDeviceForwarder.Tokens, :token_table}
+]
+
 import_config "#{config_env()}.exs"
