@@ -29,6 +29,7 @@ defmodule EdgehogDeviceForwarder.MixProject do
   defp deps do
     [
       {:con_cache, "~> 1.0"},
+      {:elixir_uuid, "~> 1.2"},
       {:gettext, "~> 0.23"},
       {:jason, "~> 1.4"},
       {:phoenix, "~> 1.7"},
