@@ -1,15 +1,11 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2024 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarderWeb.Router do
   use EdgehogDeviceForwarderWeb, :router
 
-  pipeline :api do
-    plug :accepts, ["json"]
-  end
-
-  scope "/api", EdgehogDeviceForwarderWeb do
-    pipe_through :api
+  scope "/v1/:session/:protocol/:port", EdgehogDeviceForwarderWeb do
+    match :*, "/*path", UserController, :handle_in
   end
 
   if Application.compile_env(:edgehog_device_forwarder, :dev_routes) do
