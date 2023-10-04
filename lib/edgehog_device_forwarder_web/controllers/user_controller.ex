@@ -31,7 +31,9 @@ defmodule EdgehogDeviceForwarderWeb.UserController do
           |> halt()
 
         {{:upgrade, :websocket}, _response, socket_data} ->
-          raise "Method not yet supported. Socket data: #{inspect(socket_data)}"
+          conn
+          |> WebSockAdapter.upgrade(EdgehogDeviceForwarderWeb.UserSocket, socket_data, [])
+          |> halt()
 
         {:error, reason} ->
           {:error, reason}
