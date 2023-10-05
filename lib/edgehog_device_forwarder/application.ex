@@ -1,6 +1,7 @@
+# Copyright 2023 SECO Mind Srl
+# SPDX-License-Identifier: Apache-2.0
+
 defmodule EdgehogDeviceForwarder.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
   @moduledoc false
 
   use Application
@@ -8,24 +9,15 @@ defmodule EdgehogDeviceForwarder.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      # Start the Telemetry supervisor
       EdgehogDeviceForwarderWeb.Telemetry,
-      # Start the PubSub system
       {Phoenix.PubSub, name: EdgehogDeviceForwarder.PubSub},
-      # Start the Endpoint (http/https)
       EdgehogDeviceForwarderWeb.Endpoint
-      # Start a worker by calling: EdgehogDeviceForwarder.Worker.start_link(arg)
-      # {EdgehogDeviceForwarder.Worker, arg}
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: EdgehogDeviceForwarder.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
-  # Tell Phoenix to update the endpoint configuration
-  # whenever the application is updated.
   @impl true
   def config_change(changed, _new, removed) do
     EdgehogDeviceForwarderWeb.Endpoint.config_change(changed, removed)
