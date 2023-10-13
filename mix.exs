@@ -29,6 +29,11 @@ defmodule EdgehogDeviceForwarder.MixProject do
   defp deps do
     [
       {:con_cache, "~> 1.0"},
+      {
+        :edgehog_device_forwarder_proto,
+        git: "https://github.com/edgehog-device-manager/edgehog-device-forwarder-proto",
+        sparse: "elixir/edgehog_device_forwarder_proto"
+      },
       {:elixir_uuid, "~> 1.2"},
       {:gettext, "~> 0.23"},
       {:jason, "~> 1.4"},
