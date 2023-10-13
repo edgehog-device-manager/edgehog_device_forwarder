@@ -37,7 +37,13 @@ defmodule EdgehogDeviceForwarder.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:con_cache, "~> 1.0"},
       {:typed_struct, "~> 0.1.4"},
-      {:elixir_uuid, "~> 1.2"}
+      {:elixir_uuid, "~> 1.2"},
+      {
+        :edgehog_device_forwarder_proto,
+        git: "https://github.com/noaccOS/edgehog-device-forwarder-proto",
+        branch: "feat/elixir-gen",
+        sparse: "elixir/edgehog_device_forwarder_proto"
+      }
     ]
   end
 
