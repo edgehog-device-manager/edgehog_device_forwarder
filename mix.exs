@@ -35,7 +35,8 @@ defmodule EdgehogDeviceForwarder.MixProject do
       {:phoenix_live_dashboard, "~> 0.8"},
       {:plug_cowboy, "~> 2.6"},
       {:telemetry_metrics, "~> 0.6"},
-      {:telemetry_poller, "~> 1.0"}
+      {:telemetry_poller, "~> 1.0"},
+      {:typedstruct, "~> 0.5"}
     ]
   end
 
