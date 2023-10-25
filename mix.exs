@@ -35,7 +35,8 @@ defmodule EdgehogDeviceForwarder.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:con_cache, "~> 1.0"}
+      {:con_cache, "~> 1.0"},
+      {:typed_struct, "~> 0.1.4"}
     ]
   end
 
