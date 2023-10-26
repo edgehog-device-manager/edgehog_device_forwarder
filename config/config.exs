@@ -19,7 +19,8 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 
 config :edgehog_device_forwarder, EdgehogDeviceForwarder.Cache, [
-  {EdgehogDeviceForwarder.Tokens, :tokens_table}
+  {EdgehogDeviceForwarder.Tokens, :tokens_table},
+  {EdgehogDeviceForwarder.HTTPRequests, :message_table}
 ]
 
 import_config "#{config_env()}.exs"
