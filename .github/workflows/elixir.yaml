@@ -1,0 +1,186 @@
+# Copyright 2024 SECO Mind Srl
+# SPDX-License-Identifier: Apache-2.0
+
+name: elixir-setup
+
+on:
+  workflow_call:
+
+env:
+  MIX_ENV: test
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          diagnostic-endpoint: ""
+      - name: Build Elixir/Erlang cache and set tool versions
+        uses: workflow/nix-shell-action@v3.3.0
+        id: tools
+        with:
+          flakes-from-devshell: true
+          script: |
+            elixir --version \
+            | sed -re 's|^Erlang/OTP (\S+).*|otp-version=\1|'\
+                   -e 's|^Elixir (\S+).*|elixir-version=\1|' \
+                   -e '/^\s*$/d' \
+            >> "$GITHUB_OUTPUT"
+      - name: Cache dependencies
+        id: cache-deps
+        uses: actions/cache@v3
+        with:
+          path: |
+            deps
+            _build
+          key: "${{ runner.os }}-\
+                otp-${{ steps.tools.outputs.otp-version }}-\
+                elixir-${{ steps.tools.outputs.elixir-version }}-\
+                ${{ hashFiles('mix.lock') }}"
+      - name: Fetch and compile dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        uses: workflow/nix-shell-action@v3.3.0
+        with:
+          flakes-from-devshell: true
+          script: |
+            mix deps.get --only test
+            mix local.rebar --force
+            mix deps.compile
+  test:
+    needs: [ setup ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          diagnostic-endpoint: ""
+      - name: Get Elixir/OTP versions
+        uses: workflow/nix-shell-action@v3.3.0
+        id: tools
+        with:
+          flakes-from-devshell: true
+          script: |
+            elixir --version \
+            | sed -re 's|^Erlang/OTP (\S+).*|otp-version=\1|'\
+                   -e 's|^Elixir (\S+).*|elixir-version=\1|' \
+                   -e '/^\s*$/d' \
+            >> "$GITHUB_OUTPUT"
+      - name: Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            deps
+            _build
+          key: "${{ runner.os }}-\
+                otp-${{ steps.tools.outputs.otp-version }}-\
+                elixir-${{ steps.tools.outputs.elixir-version }}-\
+                ${{ hashFiles('mix.lock') }}"
+      - name: Run tests
+        uses: workflow/nix-shell-action@v3.3.0
+        with:
+          flakes-from-devshell: true
+          script: mix test
+  formatting:
+    needs: [ setup ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          diagnostic-endpoint: ""
+      - name: Get Elixir/OTP versions
+        uses: workflow/nix-shell-action@v3.3.0
+        id: tools
+        with:
+          flakes-from-devshell: true
+          script: |
+            elixir --version \
+            | sed -re 's|^Erlang/OTP (\S+).*|otp-version=\1|'\
+                   -e 's|^Elixir (\S+).*|elixir-version=\1|' \
+                   -e '/^\s*$/d' \
+            >> "$GITHUB_OUTPUT"
+      - name: Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            deps
+            _build
+          key: "${{ runner.os }}-\
+                otp-${{ steps.tools.outputs.otp-version }}-\
+                elixir-${{ steps.tools.outputs.elixir-version }}-\
+                ${{ hashFiles('mix.lock') }}"
+      - name: Check formatting
+        uses: workflow/nix-shell-action@v3.3.0
+        with:
+          flakes-from-devshell: true
+          script: mix format --check-formatted
+  dialyzer:
+    needs: [ setup ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          diagnostic-endpoint: ""
+      - name: Get Elixir/OTP versions
+        uses: workflow/nix-shell-action@v3.3.0
+        id: tools
+        with:
+          flakes-from-devshell: true
+          script: |
+            elixir --version \
+            | sed -re 's|^Erlang/OTP (\S+).*|otp-version=\1|'\
+                   -e 's|^Elixir (\S+).*|elixir-version=\1|' \
+                   -e '/^\s*$/d' \
+            >> "$GITHUB_OUTPUT"
+      - name: Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            deps
+            _build
+          key: "${{ runner.os }}-\
+                otp-${{ steps.tools.outputs.otp-version }}-\
+                elixir-${{ steps.tools.outputs.elixir-version }}-\
+                ${{ hashFiles('mix.lock') }}"
+      - name: Cache Dialyzer's PLT
+        uses: actions/cache/restore@v3
+        id: plt_cache
+        with:
+          key: "${{ runner.os }}-\
+                otp-${{ steps.tools.outputs.otp-version }}-\
+                elixir-${{ steps.tools.outputs.elixir-version }}-\
+                dialyzer-plt"
+          path: priv/plts
+      - name: Create PLTs
+        if: steps.plt_cache.outputs.cache-hit != 'true'
+        uses: workflow/nix-shell-action@v3.3.0
+        with:
+          flakes-from-devshell: true
+          script: mix dialyzer --plt
+      - name: Save PLT cache
+        uses: actions/cache/save@v3
+        if: steps.plt_cache.outputs.cache-hit != 'true'
+        id: plt_cache_save
+        with:
+          key: "${{ steps.plt_cache.outputs.cache-primary-key }}"
+          path: priv/plts
+      - name: Run dialyzer
+        uses: workflow/nix-shell-action@v3.3.0
+        with:
+          flakes-from-devshell: true
+          script: mix dialyzer --format github
