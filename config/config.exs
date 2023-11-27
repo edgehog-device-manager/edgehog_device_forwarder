@@ -5,6 +5,7 @@ import Config
 
 config :edgehog_device_forwarder, EdgehogDeviceForwarderWeb.Endpoint,
   url: [host: "localhost"],
+  server: true,
   render_errors: [
     formats: [json: EdgehogDeviceForwarderWeb.ErrorJSON],
     layout: false
