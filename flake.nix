@@ -18,18 +18,27 @@
         flake-compat.follows = "flake-compat";
       };
     };
+    edgehog-base = {
+      url = "github:edgehog-device-manager/edgehog";
+      flake = false;
+    };
+    elixir-utils.url = "github:noaccOS/elixir-utils";
   };
-  outputs = { self, nixpkgs, edgehog, flake-utils, ... }:
+  outputs = { self, nixpkgs, edgehog, flake-utils, elixir-utils, edgehog-base, ... }:
     {
-      overlays.tools = edgehog.overlays.tools;
+      # TODO: reset to previous value without edgehog-base once upstream updates elixir-utils dependency
+      # overlays.tools = edgehog.overlays.tools;
+      overlays.tools = elixir-utils.lib.asdfOverlay { src = edgehog-base; };
     } //
     flake-utils.lib.eachDefaultSystem (system:
-      let pkgs = import nixpkgs { inherit system; overlays = [ self.overlays.tools ]; };
-      in {
+      let
+        pkgs = import nixpkgs { inherit system; overlays = [ self.overlays.tools ]; };
+        mkPackage = mixEnv: pkgs.customMixRelease { src = ./.; depsHashFile = ./.nix/hash; inherit mixEnv; };
+      in
+      {
         formatter = edgehog.formatter.${system};
         devShells.default = pkgs.elixirDevShell;
-        packages = {
-          update_copyright = pkgs.callPackage ./tools/update_copyright/default.nix { };
-        };
+        packages.default = mkPackage "prod";
+        packages.dev = mkPackage "dev";
       });
 }
