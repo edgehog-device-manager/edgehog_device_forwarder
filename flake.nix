@@ -11,7 +11,7 @@
       flake = false;
     };
     edgehog = {
-      url = "github:noaccOS/edgehog/nix?dir=backend";
+      url = "github:edgehog-device-manager/edgehog?dir=backend";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         flake-utils.follows = "flake-utils";

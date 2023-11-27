@@ -15,17 +15,16 @@
       },
       "locked": {
         "dir": "backend",
-        "lastModified": 1694686647,
-        "narHash": "sha256-oRe2NsZzJiKrk6ah8O+3Ks4ZzqtFpF+cb9PYuVYVeW8=",
-        "owner": "noaccOS",
+        "lastModified": 1696606996,
+        "narHash": "sha256-4l50jTbsARQzIk8DCSUsLpimI+1HThW16zhDAVAub3k=",
+        "owner": "edgehog-device-manager",
         "repo": "edgehog",
-        "rev": "c40a60e1837ccf5eb6609e209fe6bf5dee52255c",
+        "rev": "b13fa6a119a43a9f344d5c39aa8e9e3eedfbae46",
         "type": "github"
       },
       "original": {
         "dir": "backend",
-        "owner": "noaccOS",
-        "ref": "nix",
+        "owner": "edgehog-device-manager",
         "repo": "edgehog",
         "type": "github"
       }
