@@ -17,6 +17,20 @@ defmodule EdgehogDeviceForwarder.MessageCase do
         port: 80
       }
 
+    upgrade =
+      %HTTP.Request{
+        path: "/",
+        method: "GET",
+        query_string: "",
+        headers: %{
+          "content-type" => "plain/text",
+          "status-code" => "101",
+          "upgrade-to" => "websocket"
+        },
+        body: "",
+        port: 80
+      }
+
     response =
       %HTTP.Response{
         status_code: 200,
@@ -24,9 +38,18 @@ defmodule EdgehogDeviceForwarder.MessageCase do
         body: "contents"
       }
 
+    upgrade_response =
+      %HTTP.Response{
+        status_code: 101,
+        headers: %{"upgrade" => "websocket"},
+        body: ""
+      }
+
     [
       http_request: request,
-      http_response: response
+      http_upgrade_request: upgrade,
+      http_response: response,
+      http_upgrade_response: upgrade_response
     ]
   end
 end

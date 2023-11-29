@@ -18,9 +18,13 @@ config :logger, :console,
 
 config :phoenix, :json_library, Jason
 
+# HTTPRequests and WebSockets share the same ETS table
+message_table = :message_table
+
 config :edgehog_device_forwarder, EdgehogDeviceForwarder.Caches, [
   {EdgehogDeviceForwarder.Tokens, :token_table},
-  {EdgehogDeviceForwarder.HTTPRequests, :message_table}
+  {EdgehogDeviceForwarder.HTTPRequests, message_table},
+  {EdgehogDeviceForwarder.WebSockets, message_table}
 ]
 
 import_config "#{config_env()}.exs"
