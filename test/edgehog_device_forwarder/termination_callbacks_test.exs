@@ -4,14 +4,12 @@
 defmodule EdgehogDeviceForwarder.TerminationCallbacksTest do
   use ExUnit.Case
 
-  alias EdgehogDeviceForwarder.Supervisors.TerminationCallbacks,
-    as: TerminationCallbacksSupervisor
-
   alias EdgehogDeviceForwarder.TerminationCallbacks
+  alias EdgehogDeviceForwarder.TerminationCallbacks.Worker
 
   setup do
-    Supervisor.terminate_child(EdgehogDeviceForwarder.Supervisor, TerminationCallbacksSupervisor)
-    Supervisor.restart_child(EdgehogDeviceForwarder.Supervisor, TerminationCallbacksSupervisor)
+    Supervisor.terminate_child(EdgehogDeviceForwarder.Supervisor, TerminationCallbacks)
+    Supervisor.restart_child(EdgehogDeviceForwarder.Supervisor, TerminationCallbacks)
 
     process = spawn(fn -> wait_for_exit() end)
     [process: process]
@@ -37,11 +35,11 @@ defmodule EdgehogDeviceForwarder.TerminationCallbacksTest do
     # get_state always runs synchronously after `add` finishes.
     #   we use this to make sure the callback has been inserted in the cache
     #   before killing the process
-    GenServer.whereis(TerminationCallbacks)
+    GenServer.whereis(Worker)
     |> :sys.get_state()
 
-    Supervisor.terminate_child(TerminationCallbacksSupervisor, TerminationCallbacks)
-    Supervisor.restart_child(TerminationCallbacksSupervisor, TerminationCallbacks)
+    Supervisor.terminate_child(TerminationCallbacks, Worker)
+    Supervisor.restart_child(TerminationCallbacks, Worker)
 
     send(process, :exit)
     assert_receive ^message, :timer.seconds(1)

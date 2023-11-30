@@ -11,7 +11,7 @@ defmodule EdgehogDeviceForwarder.Application do
     children = [
       EdgehogDeviceForwarderWeb.Telemetry,
       {Phoenix.PubSub, name: EdgehogDeviceForwarder.PubSub},
-      EdgehogDeviceForwarder.Supervisors.TerminationCallbacks,
+      EdgehogDeviceForwarder.TerminationCallbacks,
       EdgehogDeviceForwarderWeb.Endpoint
     ]
 
