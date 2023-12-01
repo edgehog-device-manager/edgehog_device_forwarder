@@ -8,7 +8,7 @@ defmodule EdgehogDeviceForwarder.TerminationCallbacks.Worker do
 
   @spec add(pid, (-> any)) :: :ok
   def add(pid, on_close) when is_pid(pid) and is_function(on_close, 0) do
-    GenServer.cast(__MODULE__, {:add, pid, on_close})
+    :ok = GenServer.call(__MODULE__, {:add, pid, on_close})
   end
 
   @spec start_link(any) :: GenServer.on_start()
@@ -31,12 +31,12 @@ defmodule EdgehogDeviceForwarder.TerminationCallbacks.Worker do
   end
 
   @impl GenServer
-  def handle_cast({:add, pid, on_close}, state)
+  def handle_call({:add, pid, on_close}, _from, state)
       when is_pid(pid) and is_function(on_close, 0) do
     Process.monitor(pid)
     ConCache.put(@cache_id, pid, on_close)
 
-    {:noreply, state}
+    {:reply, :ok, state}
   end
 
   @impl GenServer
