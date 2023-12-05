@@ -2,50 +2,31 @@
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarder.TerminationCallbacks do
-  use GenServer
+  use Supervisor
 
-  @table :termination_callbacks_table
+  alias EdgehogDeviceForwarder.TerminationCallbacks.Worker
 
-  @spec add(pid, (-> any)) :: :ok
-  def add(pid, on_close) when is_pid(pid) and is_function(on_close, 0) do
-    GenServer.cast(__MODULE__, {:add, pid, on_close})
+  @cache_id :termination_callbacks_table
+
+  defdelegate add(pid, on_close), to: Worker
+
+  def start_link(init_arg) do
+    Supervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
   end
 
-  @spec start_link(any) :: GenServer.on_start()
-  def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+  @impl Supervisor
+  def init(_init_args) do
+    con_cache_child = con_cache_spec()
+    children = [con_cache_child, Worker]
+
+    Supervisor.init(children, strategy: :rest_for_one)
   end
 
-  @impl GenServer
-  def init(_opts) do
-    # If the server is restarted, our pid changed
-    #   hence, to receive the :DOWN, we need to re-monitor existing processes
-    #   Process.monitor also sends the :DOWN for already dead pid, so we don't need to check that.
-    ets_ref = ConCache.ets(@table)
+  defp con_cache_spec do
+    params = [name: @cache_id, ttl_check_interval: false]
+    id = {ConCache, @cache_id}
 
-    for {pid, _} <- :ets.tab2list(ets_ref) do
-      Process.monitor(pid)
-    end
-
-    {:ok, nil}
-  end
-
-  @impl GenServer
-  def handle_cast({:add, pid, on_close}, state)
-      when is_pid(pid) and is_function(on_close, 0) do
-    Process.monitor(pid)
-    ConCache.put(@table, pid, on_close)
-
-    {:noreply, state}
-  end
-
-  @impl GenServer
-  def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
-    # always run the callback at least once before deleting it
-    callback = ConCache.get(@table, pid)
-    unless callback == nil, do: callback.()
-    ConCache.delete(@table, pid)
-
-    {:noreply, state}
+    {ConCache, params}
+    |> Supervisor.child_spec(id: id)
   end
 end
