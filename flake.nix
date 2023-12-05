@@ -28,5 +28,8 @@
       in {
         formatter = edgehog.formatter.${system};
         devShells.default = pkgs.elixirDevShell;
+        packages = {
+          update_copyright = pkgs.callPackage ./tools/update_copyright/default.nix { };
+        };
       });
 }
