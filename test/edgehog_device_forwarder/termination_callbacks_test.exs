@@ -32,12 +32,6 @@ defmodule EdgehogDeviceForwarder.TerminationCallbacksTest do
 
     TerminationCallbacks.add(process, send_message_to_self)
 
-    # get_state always runs synchronously after `add` finishes.
-    #   we use this to make sure the callback has been inserted in the cache
-    #   before killing the process
-    GenServer.whereis(Worker)
-    |> :sys.get_state()
-
     Supervisor.terminate_child(TerminationCallbacks, Worker)
     Supervisor.restart_child(TerminationCallbacks, Worker)
 
