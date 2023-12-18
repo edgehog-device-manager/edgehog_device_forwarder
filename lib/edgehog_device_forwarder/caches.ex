@@ -1,19 +1,32 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2024 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarder.Caches do
+  @moduledoc """
+  Supervisor for the ConCache processes.
+  """
+
   use Supervisor
 
   @caches Application.compile_env!(:edgehog_device_forwarder, __MODULE__)
 
+  @doc """
+  Keyword list of all module to cache relationships.
+  """
   @spec all() :: keyword(atom())
   def all, do: @caches
 
+  @doc """
+  The list of all cache ids.
+  """
   @spec all_ets_tables() :: [atom]
   def all_ets_tables do
     Keyword.values(@caches)
   end
 
+  @doc """
+  Returns the cache id for the given module.
+  """
   @spec cache_id_for(module()) :: atom()
   def cache_id_for(module), do: Keyword.fetch!(@caches, module)
 
