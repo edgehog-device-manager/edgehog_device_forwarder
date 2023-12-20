@@ -11,7 +11,9 @@ defmodule EdgehogDeviceForwarder.Caches do
 
   @spec all_ets_tables() :: [atom]
   def all_ets_tables do
+    # We need to dedup because HTTPRequests and WebSockets share the same ets table
     Keyword.values(@caches)
+    |> Enum.dedup()
   end
 
   @spec cache_id_for(module()) :: atom()
