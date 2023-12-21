@@ -27,4 +27,7 @@ config :edgehog_device_forwarder, EdgehogDeviceForwarder.Caches, [
   {EdgehogDeviceForwarder.WebSockets, message_table}
 ]
 
+config :edgehog_device_forwarder, EdgehogDeviceForwarder.Forwarder,
+  request_timeout: :timer.seconds(5)
+
 import_config "#{config_env()}.exs"
