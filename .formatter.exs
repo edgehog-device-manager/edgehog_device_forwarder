@@ -2,6 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 [
-  import_deps: [:phoenix, :typed_struct],
+  import_deps: [:phoenix, :typedstruct],
   inputs: ["*.{ex,exs}", "{config,lib,test}/**/*.{ex,exs}"]
 ]
