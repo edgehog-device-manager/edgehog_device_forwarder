@@ -34,6 +34,45 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
         get(conn, path, request.body)
       end
     end
+
+    test "returns 404 when no device is connected with the given token", %{
+      conn: conn,
+      http_request: request
+    } do
+      not_connected_token = "not_connected_token"
+      path = "/v1/#{not_connected_token}/http/80"
+
+      conn
+      |> add_request_headers(request.headers)
+      |> get(path, request.body)
+      |> response(404)
+    end
+
+    test "returns 400 with an invalid request port", %{
+      conn: conn,
+      http_request: request,
+      ping_pong_token: token
+    } do
+      path = "/v1/#{token}/http/not_a_port"
+
+      conn
+      |> add_request_headers(request.headers)
+      |> get(path, request.body)
+      |> response(400)
+    end
+
+    test "returns 408 if it reaches timeout", %{
+      conn: conn,
+      http_request: request,
+      timeout_token: token
+    } do
+      path = "/v1/#{token}/http/80"
+
+      conn
+      |> add_request_headers(request.headers)
+      |> get(path, request.body)
+      |> response(408)
+    end
   end
 
   def add_header({header, value}, conn), do: Plug.Conn.put_req_header(conn, header, value)
