@@ -1,4 +1,4 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2024 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 import Config
@@ -10,7 +10,8 @@ config :edgehog_device_forwarder, EdgehogDeviceForwarderWeb.Endpoint,
     layout: false
   ],
   pubsub_server: EdgehogDeviceForwarder.PubSub,
-  live_view: [signing_salt: "KhdMSuxy"]
+  live_view: [signing_salt: "KhdMSuxy"],
+  device_socket_timeout: :timer.hours(2)
 
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
