@@ -1,7 +1,11 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2024 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarder.Tokens do
+  @moduledoc """
+  Interface to the cache for the device Tokens.
+  """
+
   alias EdgehogDeviceForwarder.Tokens.Data
   alias EdgehogDeviceForwarder.TerminationCallbacks
   require Logger
@@ -12,6 +16,9 @@ defmodule EdgehogDeviceForwarder.Tokens do
   @type realm :: Data.realm()
   @type device_socket :: Data.device_socket()
 
+  @doc """
+  Saves device information in cache.
+  """
   @spec add_device_info(token, device_id, realm) ::
           :ok | {:error, :token_not_found}
   def add_device_info(token, device_id, realm) do
@@ -21,6 +28,9 @@ defmodule EdgehogDeviceForwarder.Tokens do
     end)
   end
 
+  @doc """
+  Makes a reservation for a token.
+  """
   @spec reserve(token) :: :ok | {:error, :token_already_exists}
   def reserve(token) do
     case ConCache.insert_new(@cache_id, token, :reserved) do
@@ -29,6 +39,11 @@ defmodule EdgehogDeviceForwarder.Tokens do
     end
   end
 
+  @doc """
+  Registers the device socket under the specified token.
+
+  The token has to be reserved before attempting the registration.
+  """
   @spec register(token, device_socket) :: :ok | {:error, :invalid_data}
   def register(token, socket) do
     ConCache.update(@cache_id, token, fn
@@ -44,6 +59,9 @@ defmodule EdgehogDeviceForwarder.Tokens do
     end)
   end
 
+  @doc """
+  Removes the connection to the specified token.
+  """
   @spec close(token) :: :ok
   def close(token) do
     ConCache.delete(@cache_id, token)
@@ -52,6 +70,9 @@ defmodule EdgehogDeviceForwarder.Tokens do
     |> Logger.info(tag: "device_event")
   end
 
+  @doc """
+  Fetch token data form the cache.
+  """
   @spec fetch(token) :: {:ok, Data.t()} | {:error, :token_not_found}
   def fetch(token) do
     case ConCache.get(@cache_id, token) do
@@ -60,6 +81,9 @@ defmodule EdgehogDeviceForwarder.Tokens do
     end
   end
 
+  @doc """
+  Fetch the device socket from the token.
+  """
   @spec fetch_device_socket(token) :: {:ok, device_socket} | {:error, :token_not_found}
   def fetch_device_socket(token) do
     with {:ok, %Data{socket: socket}} <- fetch(token) do
