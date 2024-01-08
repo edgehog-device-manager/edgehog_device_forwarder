@@ -76,7 +76,7 @@ defmodule EdgehogDeviceForwarder.ForwarderCase do
         :ok = Tokens.register(token, socket)
         token
 
-      {:error, :already_exists} ->
+      {:error, :token_already_exists} ->
         register_device(socket)
     end
   end
