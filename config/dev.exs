@@ -1,10 +1,11 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2024 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 import Config
 
 config :edgehog_device_forwarder, EdgehogDeviceForwarderWeb.Endpoint,
   http: [ip: {0, 0, 0, 0}, port: 4000],
+  device_socket_timeout: :timer.minutes(1),
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
