@@ -1,7 +1,11 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2024 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarder.TerminationCallbacks do
+  @moduledoc """
+  Supervisor for the process monitor and its cache.
+  """
+
   use Supervisor
 
   alias EdgehogDeviceForwarder.TerminationCallbacks.Worker
