@@ -1,11 +1,20 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2024 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarder.TerminationCallbacks.Worker do
+  @moduledoc """
+  Executes callbacks when the monitored processes exit.
+  """
+
   use GenServer
 
   @cache_id :termination_callbacks_table
 
+  @doc """
+  Execute callback `on_close` when the given `pid` exits.
+
+  The callback is guaranteed to be executed at least once.
+  """
   @spec add(pid, (-> any)) :: :ok
   def add(pid, on_close) when is_pid(pid) and is_function(on_close, 0) do
     :ok = GenServer.call(__MODULE__, {:add, pid, on_close})
