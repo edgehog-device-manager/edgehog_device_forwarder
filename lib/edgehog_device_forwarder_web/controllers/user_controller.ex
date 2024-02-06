@@ -11,6 +11,8 @@ defmodule EdgehogDeviceForwarderWeb.UserController do
   alias EdgehogDeviceForwarder.Forwarder
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Http, as: HTTP
 
+  action_fallback EdgehogDeviceForwarderWeb.ErrorController
+
   @doc """
   Redirect the request to the appropriate device session.
   """

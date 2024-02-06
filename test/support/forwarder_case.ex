@@ -15,7 +15,7 @@ defmodule EdgehogDeviceForwarder.ForwarderCase do
     me = self()
     ping_pong_socket = spawn(fn -> ping_pong(me) end)
 
-    [ping_pong_token: register_device(ping_pong_socket)]
+    [ping_pong_token: register_device(ping_pong_socket), timeout_token: register_device(me)]
   end
 
   def ping_pong(target, response_function \\ &make_response/1) do
