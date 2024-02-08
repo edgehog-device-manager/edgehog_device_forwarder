@@ -12,7 +12,8 @@ defmodule EdgehogDeviceForwarder.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      dialyzer: dialyzer_opts(Mix.env())
     ]
   end
 
@@ -26,9 +27,19 @@ defmodule EdgehogDeviceForwarder.MixProject do
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
+  defp dialyzer_opts(:test) do
+    [
+      plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
+      plt_add_apps: [:ex_unit]
+    ]
+  end
+
+  defp dialyzer_opts(_env), do: []
+
   defp deps do
     [
       {:con_cache, "~> 1.0"},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {
         :edgehog_device_forwarder_proto,
         git: "https://github.com/edgehog-device-manager/edgehog-device-forwarder-proto",

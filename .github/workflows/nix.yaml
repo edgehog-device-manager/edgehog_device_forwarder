@@ -1,0 +1,28 @@
+# Copyright 2023 SECO Mind Srl
+# SPDX-License-Identifier: Apache-2.0
+
+name: Nix
+
+on:
+  workflow_call:
+
+jobs:
+  flake-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: nix flake check -L --debug
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check formatting
+        run: |
+          nix fmt
+          git diff --exit-code --name-only

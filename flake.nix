@@ -18,15 +18,16 @@
         flake-compat.follows = "flake-compat";
       };
     };
+    elixir-utils.url = "github:noaccOS/elixir-utils";
   };
-  outputs = { self, nixpkgs, edgehog, flake-utils, ... }:
+  outputs = { self, nixpkgs, edgehog, elixir-utils, flake-utils, ... }:
     {
-      overlays.tools = edgehog.overlays.tools;
+      overlays.tools = elixir-utils.lib.asdfOverlay { src = ./.; wxSupport = false; };
+      formatter = edgehog.formatter;
     } //
     flake-utils.lib.eachDefaultSystem (system:
       let pkgs = import nixpkgs { inherit system; overlays = [ self.overlays.tools ]; };
       in {
-        formatter = edgehog.formatter.${system};
         devShells.default = pkgs.elixirDevShell;
         packages = {
           update_copyright = pkgs.callPackage ./tools/update_copyright/default.nix { };
