@@ -32,8 +32,9 @@ defmodule EdgehogDeviceForwarderWeb.UserController do
           |> send_resp(response.status_code, response.body)
           |> halt()
 
-        {{:upgrade, :websocket}, _response, socket_data} ->
+        {{:upgrade, :websocket}, response, socket_data} ->
           conn
+          |> merge_resp_headers(response.headers)
           |> WebSockAdapter.upgrade(EdgehogDeviceForwarderWeb.UserSocket, socket_data, [])
           |> halt()
 
