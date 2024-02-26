@@ -1,20 +1,24 @@
 # Copyright 2023-2024 SECO Mind Srl
 # SPDX-License-Identifier: CC0-1.0
-
 msgid ""
 msgstr ""
 
-#: lib/edgehog_device_forwarder_web/controllers/fallback_controller.ex:5
+#: lib/edgehog_device_forwarder_web/controllers/error_controller.ex:12
 #, elixir-autogen, elixir-format
 msgid "Session not found or device not connected"
 msgstr ""
 
-#: lib/edgehog_device_forwarder_web/controllers/fallback_controller.ex:13
+#: lib/edgehog_device_forwarder_web/controllers/error_controller.ex:20
 #, elixir-autogen, elixir-format
 msgid "Request timeout"
 msgstr ""
 
-#: lib/edgehog_device_forwarder_web/controllers/fallback_controller.ex:21
+#: lib/edgehog_device_forwarder_web/controllers/error_controller.ex:28
 #, elixir-autogen, elixir-format
 msgid "The specified request port is not a valid port"
+msgstr ""
+
+#: lib/edgehog_device_forwarder_web/controllers/error_controller.ex:36
+#, elixir-autogen, elixir-format
+msgid "Request protocol not yet handled"
 msgstr ""

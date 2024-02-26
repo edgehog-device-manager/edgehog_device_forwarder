@@ -21,10 +21,25 @@ defmodule EdgehogDeviceForwarderWeb.UserController do
           | {:error, :invalid_request_port}
           | {:error, :request_timeout}
           | {:error, :token_not_found}
-  def handle_in(conn, _params) do
+          | {:error, {:invalid_protocol, String.t()}}
+  def handle_in(conn, params) do
+    protocol = conn.path_params["protocol"] |> String.downcase(:ascii)
+
+    case protocol do
+      "http" -> handle_http(conn, params)
+      other -> {:error, {:invalid_protocol, other}}
+    end
+  end
+
+  @spec handle_http(Plug.Conn.t(), any) ::
+          Plug.Conn.t()
+          | {:error, :invalid_request_port}
+          | {:error, :request_timeout}
+          | {:error, :token_not_found}
+  defp handle_http(conn, _params) do
     token = conn.path_params["session"]
 
-    with {:ok, request} <- build_request(conn) do
+    with {:ok, request} <- build_http_request(conn) do
       case Forwarder.http_to_device(token, request) do
         {:respond, response} ->
           conn
@@ -43,8 +58,9 @@ defmodule EdgehogDeviceForwarderWeb.UserController do
     end
   end
 
-  @spec build_request(Plug.Conn.t()) :: {:ok, HTTP.Request.t()} | {:error, :invalid_request_port}
-  defp build_request(conn) do
+  @spec build_http_request(Plug.Conn.t()) ::
+          {:ok, HTTP.Request.t()} | {:error, :invalid_request_port}
+  defp build_http_request(conn) do
     with {:ok, port} <- fetch_port(conn) do
       request = %HTTP.Request{
         path: Enum.join(conn.path_params["path"], "/"),

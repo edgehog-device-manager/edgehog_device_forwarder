@@ -31,4 +31,13 @@ defmodule EdgehogDeviceForwarderWeb.ErrorController do
     |> send_resp(400, error)
     |> halt()
   end
+
+  def call(conn, {:error, {:invalid_protocol, protocol}}) do
+    error = dgettext("errors", "Request protocol not yet handled")
+    error = ~s[#{error}: "#{protocol}"]
+
+    conn
+    |> send_resp(501, error)
+    |> halt()
+  end
 end
