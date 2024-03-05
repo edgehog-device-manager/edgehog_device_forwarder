@@ -8,6 +8,8 @@ defmodule EdgehogDeviceForwarderWeb.Router do
     match :*, "/*path", UserController, :handle_in
   end
 
+  get "/health", EdgehogDeviceForwarderWeb.HealthController, :status
+
   if Application.compile_env(:edgehog_device_forwarder, :dev_routes) do
     import Phoenix.LiveDashboard.Router
 
