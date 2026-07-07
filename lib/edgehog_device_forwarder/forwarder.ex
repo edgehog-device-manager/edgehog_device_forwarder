@@ -10,6 +10,7 @@ defmodule EdgehogDeviceForwarder.Forwarder do
   alias EdgehogDeviceForwarder.WebSockets.Data, as: WebSocketsData
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Message, as: ProtoMessage
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Http, as: ProtoHTTP
+  alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Https, as: ProtoHTTPS
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.WebSocket, as: ProtoWebSocket
 
   require Logger
@@ -26,17 +27,19 @@ defmodule EdgehogDeviceForwarder.Forwarder do
           {:respond, ProtoHTTP.Response.t()}
           | {{:upgrade, :websocket}, ProtoHTTP.Response.t(), WebSocketsData.t()}
           | {:error, :request_timeout | :token_not_found}
-  def http_to_device(token, request) do
+  def http_to_device(token, request, opts \\ []) do
+    protocol =
+      case Keyword.fetch(opts, :secure) do
+        {:ok, true} -> :https
+        _ -> :http
+      end
+
     with {:ok, device_socket} <- Tokens.fetch_device_socket(token) do
       request_id = HTTPRequests.new(self())
 
-      message = %ProtoHTTP{request_id: request_id, message: {:request, request}}
+      message = generate_message(protocol, request_id, request)
 
-      message =
-        %ProtoMessage{protocol: {:http, message}}
-        |> ProtoMessage.encode()
-
-      "sending http to device with request_id: #{inspect(request_id)}"
+      "sending #{to_string(protocol)} to device with request_id: #{inspect(request_id)}"
       |> Logger.debug(tag: "device_event")
 
       send(device_socket, {:binary, message})
@@ -102,6 +105,20 @@ defmodule EdgehogDeviceForwarder.Forwarder do
 
         :ok
     end
+  end
+
+  defp generate_message(:http, request_id, request) do
+    message = %ProtoHTTP{request_id: request_id, message: {:request, request}}
+
+    %ProtoMessage{protocol: {:http, message}}
+    |> ProtoMessage.encode()
+  end
+
+  defp generate_message(:https, request_id, request) do
+    message = %ProtoHTTPS{request_id: request_id, message: {:request, request}}
+
+    %ProtoMessage{protocol: {:https, message}}
+    |> ProtoMessage.encode()
   end
 
   @spec close_message(WebSockets.id()) :: WebSockets.message()
