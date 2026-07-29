@@ -27,6 +27,7 @@ defmodule EdgehogDeviceForwarderWeb.UserController do
 
     case protocol do
       "http" -> handle_http(conn, params)
+      "https" -> handle_http(conn, params, secure: true)
       other -> {:error, {:invalid_protocol, other}}
     end
   end
@@ -36,11 +37,11 @@ defmodule EdgehogDeviceForwarderWeb.UserController do
           | {:error, :invalid_request_port}
           | {:error, :request_timeout}
           | {:error, :token_not_found}
-  defp handle_http(conn, _params) do
+  defp handle_http(conn, _params, opts \\ []) do
     token = conn.path_params["session"]
 
     with {:ok, request} <- build_http_request(conn) do
-      case Forwarder.http_to_device(token, request) do
+      case Forwarder.http_to_device(token, request, opts) do
         {:respond, response} ->
           conn
           |> merge_resp_headers(response.headers)

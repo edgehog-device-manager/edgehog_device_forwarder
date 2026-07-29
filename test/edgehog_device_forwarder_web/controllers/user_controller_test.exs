@@ -19,6 +19,19 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
       |> response(200)
     end
 
+    test "works with https", %{
+      conn: conn,
+      ping_pong_token: token,
+      http_request: request
+    } do
+      path = "/v1/#{token}/https/80"
+
+      conn
+      |> add_request_headers(request.headers)
+      |> get(path, request.body)
+      |> response(200)
+    end
+
     test "upgrades to websocket on 101 upgrade websocket", %{
       conn: conn,
       ping_pong_token: token,

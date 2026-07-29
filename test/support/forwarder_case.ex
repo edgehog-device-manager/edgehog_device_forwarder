@@ -9,6 +9,7 @@ defmodule EdgehogDeviceForwarder.ForwarderCase do
   alias EdgehogDeviceForwarder.Tokens
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Message
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Http, as: HTTP
+  alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Https, as: HTTPS
   alias EdgehogDeviceForwarder.Forwarder
 
   setup do
@@ -64,6 +65,36 @@ defmodule EdgehogDeviceForwarder.ForwarderCase do
     }
 
     {:http, %HTTP{request_id: id, message: {:response, response}}}
+  end
+
+  defp make_response({:https, %HTTPS{message: {:request, _}} = http}) do
+    %HTTPS{message: {:request, request}, request_id: id} = http
+
+    status_code =
+      with {:ok, status} <- Map.fetch(request.headers, "status-code"),
+           {status, ""} <- Integer.parse(status) do
+        status
+      else
+        _ -> 200
+      end
+
+    headers =
+      with 101 <- status_code,
+           {:ok, protocol} <- Map.fetch(request.headers, "upgrade-to") do
+        Map.put(request.headers, "upgrade", protocol)
+      else
+        _ -> request.headers
+      end
+
+    headers = Map.drop(headers, ["upgrade-to", "status-code"])
+
+    response = %HTTP.Response{
+      status_code: status_code,
+      body: request.body,
+      headers: headers
+    }
+
+    {:http, %HTTPS{request_id: id, message: {:response, response}}}
   end
 
   defp make_response({:ws, _} = message), do: message
