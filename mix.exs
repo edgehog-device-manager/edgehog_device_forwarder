@@ -1,4 +1,4 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2026 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarder.MixProject do
@@ -8,7 +8,7 @@ defmodule EdgehogDeviceForwarder.MixProject do
     [
       app: :edgehog_device_forwarder,
       version: "0.1.0",
-      elixir: "~> 1.15",
+      elixir: "~> 1.20",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
