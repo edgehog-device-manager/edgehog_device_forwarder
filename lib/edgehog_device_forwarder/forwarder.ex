@@ -1,4 +1,4 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2026 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarder.Forwarder do
@@ -99,8 +99,19 @@ defmodule EdgehogDeviceForwarder.Forwarder do
         HTTPRequests.forward(request_id, response)
         :ok
 
+      {:https, %ProtoHTTPS{message: {:response, _}} = https} ->
+        %ProtoHTTPS{request_id: request_id, message: {:response, response}} = https
+        HTTPRequests.forward(request_id, response)
+        :ok
+
       {:http, http} ->
         "Received HTTP Request from device, with id #{inspect(http.request_id)}"
+        |> Logger.notice(tag: "invalid_request_from_device")
+
+        :ok
+
+      {:https, https} ->
+        "Received HTTPS Request from device, with id #{inspect(https.request_id)}"
         |> Logger.notice(tag: "invalid_request_from_device")
 
         :ok
@@ -126,7 +137,7 @@ defmodule EdgehogDeviceForwarder.Forwarder do
     message =
       %ProtoWebSocket{
         socket_id: socket_id,
-        message: {:close, %{code: 4000, reason: "Socket not found"}}
+        message: {:close, %ProtoWebSocket.Close{code: 4000, reason: "Socket not found"}}
       }
 
     message =

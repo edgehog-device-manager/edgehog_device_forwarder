@@ -1,4 +1,4 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2026 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarderWeb do
@@ -45,7 +45,7 @@ defmodule EdgehogDeviceForwarderWeb do
         layouts: [html: EdgehogDeviceForwarderWeb.Layouts]
 
       import Plug.Conn
-      import EdgehogDeviceForwarderWeb.Gettext
+      use Gettext, backend: EdgehogDeviceForwarderWeb.Gettext
 
       unquote(verified_routes())
     end

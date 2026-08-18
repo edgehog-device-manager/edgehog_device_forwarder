@@ -1,4 +1,4 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2026 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarder.WebSockets do
@@ -6,7 +6,6 @@ defmodule EdgehogDeviceForwarder.WebSockets do
   Interface to the cache for the WebSockets connections.
   """
 
-  require Logger
   alias EdgehogDeviceForwarder.HTTPRequests
   alias EdgehogDeviceForwarder.WebSockets.Data
   alias EdgehogDeviceForwarder.WebSockets.Core

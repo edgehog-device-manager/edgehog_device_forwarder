@@ -1,4 +1,4 @@
-# Copyright 2024 SECO Mind Srl
+# Copyright 2024-2026 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarderWeb.UserSocket do
@@ -11,8 +11,6 @@ defmodule EdgehogDeviceForwarderWeb.UserSocket do
   alias EdgehogDeviceForwarder.Forwarder
   alias EdgehogDeviceForwarder.WebSockets
   alias EdgehogDeviceForwarder.WebSockets.Data
-
-  require Logger
 
   @doc """
   Executed when upgrading the HTTP Request to a WebSocket.

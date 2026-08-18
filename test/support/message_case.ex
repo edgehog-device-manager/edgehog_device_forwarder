@@ -1,4 +1,4 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2026 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarder.MessageCase do
@@ -6,7 +6,9 @@ defmodule EdgehogDeviceForwarder.MessageCase do
 
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Http, as: HTTP
 
-  setup_all do
+  setup_all :message_setup_all
+
+  def message_setup_all(_context) do
     request =
       %HTTP.Request{
         path: "/",
@@ -25,7 +27,10 @@ defmodule EdgehogDeviceForwarder.MessageCase do
         headers: %{
           "content-type" => "plain/text",
           "status-code" => "101",
-          "upgrade-to" => "websocket"
+          "connection" => "upgrade",
+          "upgrade" => "websocket",
+          "sec-websocket-key" => "dGhlIHNhbXBsZSBub25jZQ==",
+          "sec-websocket-version" => "13"
         },
         body: "",
         port: 80

@@ -1,4 +1,4 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2026 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarder.ForwarderTest do
@@ -12,8 +12,6 @@ defmodule EdgehogDeviceForwarder.ForwarderTest do
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Message, as: ProtoMessage
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Http, as: ProtoHTTP
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.WebSocket, as: ProtoWebSocket
-
-  require Logger
 
   describe "http_to_device/2" do
     test "waits synchronously the response from the client", %{
@@ -29,7 +27,7 @@ defmodule EdgehogDeviceForwarder.ForwarderTest do
     end
 
     test "returns {:error, :request_timeout} if the device doesn't respond in time", %{
-      http_response: request
+      http_request: request
     } do
       token = "new_token"
 

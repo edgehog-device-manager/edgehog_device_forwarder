@@ -1,16 +1,20 @@
-# Copyright 2023-2024 SECO Mind Srl
+# Copyright 2023-2026 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarder.ForwarderCase do
   use ExUnit.CaseTemplate
-  use EdgehogDeviceForwarder.CacheCase
-  use EdgehogDeviceForwarder.MessageCase
+
+  import EdgehogDeviceForwarder.CacheCase
+  import EdgehogDeviceForwarder.MessageCase
 
   alias EdgehogDeviceForwarder.Tokens
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Message
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Http, as: HTTP
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Https, as: HTTPS
   alias EdgehogDeviceForwarder.Forwarder
+
+  setup_all :message_setup_all
+  setup :cache_setup
 
   setup do
     me = self()
@@ -94,7 +98,7 @@ defmodule EdgehogDeviceForwarder.ForwarderCase do
       headers: headers
     }
 
-    {:http, %HTTPS{request_id: id, message: {:response, response}}}
+    {:https, %HTTPS{request_id: id, message: {:response, response}}}
   end
 
   defp make_response({:ws, _} = message), do: message

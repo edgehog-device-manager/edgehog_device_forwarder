@@ -41,11 +41,11 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
     } do
       conn = conn |> put_session_cookie(token, "http", 80) |> add_request_headers(request.headers)
 
-      # WebSockAdapter doesn't handle Plug's Test adapter so it raises,
-      #   but we know the connection is trying to upgrade to websocket
-      assert_raise ArgumentError, "Unknown adapter Plug.Adapters.Test.Conn", fn ->
-        get(conn, "/", request.body)
-      end
+      conn = %{conn | req_headers: [{"host", "localhost"} | conn.req_headers]}
+
+      conn = get(conn, "/", request.body)
+
+      assert conn.state == :upgraded
     end
 
     test "returns 404 when no device is connected with the given token", %{

@@ -1,4 +1,4 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2026 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarderWeb.Gettext do
@@ -23,5 +23,5 @@ defmodule EdgehogDeviceForwarderWeb.Gettext do
 
   See the [Gettext Docs](https://hexdocs.pm/gettext) for detailed usage.
   """
-  use Gettext, otp_app: :edgehog_device_forwarder
+  use Gettext.Backend, otp_app: :edgehog_device_forwarder
 end
