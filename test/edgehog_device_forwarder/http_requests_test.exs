@@ -1,4 +1,4 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2026 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarder.HTTPRequestsTest do
@@ -36,6 +36,16 @@ defmodule EdgehogDeviceForwarder.HTTPRequestsTest do
     } do
       assert :ok = HTTPRequests.forward(request_id, response)
       assert {:error, :http_request_not_found} == HTTPRequests.forward(request_id, response)
+    end
+
+    test "returns an error if the request id is not a plain http request", %{
+      socket: controller,
+      http_upgrade_response: upgrade
+    } do
+      request_id = HTTPRequests.new(controller)
+      :ok = HTTPRequests.forward(request_id, upgrade)
+
+      assert {:error, :http_request_not_found} == HTTPRequests.forward(request_id, upgrade)
     end
   end
 end

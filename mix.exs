@@ -55,7 +55,8 @@ defmodule EdgehogDeviceForwarder.MixProject do
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:typedstruct, "~> 0.5"},
-      {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}
+      {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
+      {:mimic, "~> 2.3.0", only: [:test]}
     ]
   end
 

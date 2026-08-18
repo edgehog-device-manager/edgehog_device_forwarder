@@ -2,3 +2,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ExUnit.start()
+
+Mimic.copy(EdgehogDeviceForwarderWeb.Endpoint)

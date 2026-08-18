@@ -1,4 +1,4 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2026 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarder.TokensTests do
@@ -25,6 +25,22 @@ defmodule EdgehogDeviceForwarder.TokensTests do
   test "close/1 removes the token from the cache", %{valid_token: token} do
     assert :ok == Tokens.close(token)
     assert {:error, :token_not_found} == Tokens.fetch(token)
+  end
+
+  test "reserve/1 returns an error if the token is already reserved" do
+    token = "some_other_token"
+
+    assert :ok == Tokens.reserve(token)
+    assert {:error, :token_already_exists} == Tokens.reserve(token)
+  end
+
+  test "register/2 returns an error if the token is not reserved", %{socket: socket} do
+    token = "some_other_token"
+
+    :ok = Tokens.reserve(token)
+    :ok = Tokens.register(token, socket)
+
+    assert {:error, :invalid_data} == Tokens.register(token, socket)
   end
 
   describe "add_device_info/2" do

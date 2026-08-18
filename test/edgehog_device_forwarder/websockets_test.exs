@@ -1,4 +1,4 @@
-# Copyright 2023 SECO Mind Srl
+# Copyright 2023-2026 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarder.WebSocketsTest do
@@ -51,6 +51,14 @@ defmodule EdgehogDeviceForwarder.WebSocketsTest do
                WebSockets.upgrade(request_id, websocket_socket, data)
     end
 
+    test "returns an error if the request id is not known", %{
+      socket_data: data,
+      socket: websocket_socket
+    } do
+      assert {:error, :http_request_not_found} ==
+               WebSockets.upgrade("non_existing_id", websocket_socket, data)
+    end
+
     test "saves the new socket to the cache using the old request id", %{
       http_request_id: request_id,
       socket_data: data,
@@ -97,12 +105,25 @@ defmodule EdgehogDeviceForwarder.WebSocketsTest do
       assert :ok == WebSockets.forward(socket_id, @valid_message)
       assert :ok == WebSockets.forward(socket_id, @valid_message)
     end
+
+    test "returns an error if the id is not a websocket", %{socket: controller} do
+      request_id = HTTPRequests.new(controller)
+
+      assert {:error, :websocket_not_found} ==
+               WebSockets.forward(request_id, @valid_message)
+    end
   end
 
   describe "close/2 coming from the user" do
     test "marks the socket_id as :closing", %{socket_id: socket_id} do
       WebSockets.close(socket_id, self())
       assert {:error, :websocket_is_closing} == WebSockets.forward(socket_id, @valid_message)
+    end
+
+    test "returns an error if the id is not a websocket", %{socket: controller} do
+      request_id = HTTPRequests.new(controller)
+
+      assert {:error, :websocket_not_found} == WebSockets.close(request_id, self())
     end
 
     test "sends a close message to the device", %{socket_id: socket_id} do

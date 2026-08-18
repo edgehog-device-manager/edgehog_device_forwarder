@@ -73,6 +73,18 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
       |> response(400)
     end
 
+    test "returns 501 for an unsupported protocol", %{
+      conn: conn,
+      http_request: request
+    } do
+      conn = put_session_cookie(conn, "some_token", "ftp", 80)
+
+      conn
+      |> add_request_headers(request.headers)
+      |> get("/", request.body)
+      |> response(501)
+    end
+
     test "returns 400 when the session cookie is missing", %{
       conn: conn,
       http_request: request

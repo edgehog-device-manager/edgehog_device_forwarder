@@ -11,6 +11,7 @@ defmodule EdgehogDeviceForwarder.ForwarderTest do
   alias EdgehogDeviceForwarder.Tokens
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Message, as: ProtoMessage
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Http, as: ProtoHTTP
+  alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Https, as: ProtoHTTPS
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.WebSocket, as: ProtoWebSocket
 
   describe "http_to_device/2" do
@@ -24,6 +25,27 @@ defmodule EdgehogDeviceForwarder.ForwarderTest do
 
       assert {{:upgrade, :websocket}, _response, %{socket_id: _socket_id, device: _device_socket}} =
                Forwarder.http_to_device(ping_pong_token, request_upgrade)
+    end
+
+    test "supports https requests with upgrade headers", %{
+      ping_pong_token: ping_pong_token
+    } do
+      request = %ProtoHTTP.Request{
+        path: "/",
+        method: "GET",
+        query_string: "",
+        headers: %{
+          "content-type" => "plain/text",
+          "status-code" => "101",
+          "upgrade-to" => "websocket",
+          "upgrade" => "websocket"
+        },
+        body: "",
+        port: 443
+      }
+
+      assert {{:upgrade, :websocket}, _response, %{socket_id: _socket_id, device: _device_socket}} =
+               Forwarder.http_to_device(ping_pong_token, request, secure: true)
     end
 
     test "returns {:error, :request_timeout} if the device doesn't respond in time", %{
@@ -95,6 +117,45 @@ defmodule EdgehogDeviceForwarder.ForwarderTest do
       assert %ProtoWebSocket{socket_id: ^non_existing_id, message: close_message} = close_message
       assert {:close, close_message} = close_message
       assert close_message.code == 4000
+    end
+
+    test "ignores http requests sent from the device", %{http_request: request} do
+      message = %ProtoHTTP{request_id: "some_request_id", message: {:request, request}}
+
+      message =
+        %ProtoMessage{protocol: {:http, message}}
+        |> ProtoMessage.encode()
+
+      assert :ok == Forwarder.to_user(message)
+    end
+
+    test "ignores https requests sent from the device", %{http_request: request} do
+      message = %ProtoHTTPS{request_id: "some_request_id", message: {:request, request}}
+
+      message =
+        %ProtoMessage{protocol: {:https, message}}
+        |> ProtoMessage.encode()
+
+      assert :ok == Forwarder.to_user(message)
+    end
+
+    test "returns :ok if the target websocket is closing", %{
+      http_upgrade_response: upgrade
+    } do
+      request_id = HTTPRequests.new(self())
+      socket_data = %WebSocketsData{socket_id: request_id, device: self()}
+
+      :ok = HTTPRequests.forward(request_id, upgrade)
+      :ok = WebSockets.upgrade(request_id, self(), socket_data)
+      :ok = WebSockets.close(request_id, self())
+
+      message = %ProtoWebSocket{socket_id: request_id, message: {:text, "hello"}}
+
+      message =
+        %ProtoMessage{protocol: {:ws, message}}
+        |> ProtoMessage.encode()
+
+      assert :ok == Forwarder.to_user(message)
     end
   end
 end
