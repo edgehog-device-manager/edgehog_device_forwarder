@@ -1,9 +1,11 @@
-# Copyright 2024 SECO Mind Srl
+# Copyright 2024-2026 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
   use EdgehogDeviceForwarder.ForwarderCase
   use EdgehogDeviceForwarderWeb.ConnCase
+
+  @cookie_name "edgehog_forwarder_session"
 
   describe "handle_in/2" do
     test "redirects the request to the forwarder", %{
@@ -11,11 +13,11 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
       ping_pong_token: token,
       http_request: request
     } do
-      path = "/v1/#{token}/http/80"
+      conn = put_session_cookie(conn, token, "http", 80)
 
       conn
       |> add_request_headers(request.headers)
-      |> get(path, request.body)
+      |> get("/", request.body)
       |> response(200)
     end
 
@@ -24,11 +26,11 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
       ping_pong_token: token,
       http_request: request
     } do
-      path = "/v1/#{token}/https/80"
+      conn = put_session_cookie(conn, token, "https", 80)
 
       conn
       |> add_request_headers(request.headers)
-      |> get(path, request.body)
+      |> get("/", request.body)
       |> response(200)
     end
 
@@ -37,14 +39,12 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
       ping_pong_token: token,
       http_upgrade_request: request
     } do
-      path = "/v1/#{token}/http/80"
-
-      conn = add_request_headers(conn, request.headers)
+      conn = conn |> put_session_cookie(token, "http", 80) |> add_request_headers(request.headers)
 
       # WebSockAdapter doesn't handle Plug's Test adapter so it raises,
       #   but we know the connection is trying to upgrade to websocket
       assert_raise ArgumentError, "Unknown adapter Plug.Adapters.Test.Conn", fn ->
-        get(conn, path, request.body)
+        get(conn, "/", request.body)
       end
     end
 
@@ -52,12 +52,11 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
       conn: conn,
       http_request: request
     } do
-      not_connected_token = "not_connected_token"
-      path = "/v1/#{not_connected_token}/http/80"
+      conn = put_session_cookie(conn, "not_connected_token", "http", 80)
 
       conn
       |> add_request_headers(request.headers)
-      |> get(path, request.body)
+      |> get("/", request.body)
       |> response(404)
     end
 
@@ -66,11 +65,33 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
       http_request: request,
       ping_pong_token: token
     } do
-      path = "/v1/#{token}/http/not_a_port"
+      conn = put_session_cookie(conn, token, "http", 70000)
 
       conn
       |> add_request_headers(request.headers)
-      |> get(path, request.body)
+      |> get("/", request.body)
+      |> response(400)
+    end
+
+    test "returns 400 when the session cookie is missing", %{
+      conn: conn,
+      http_request: request
+    } do
+      conn
+      |> add_request_headers(request.headers)
+      |> get("/", request.body)
+      |> response(400)
+    end
+
+    test "returns 400 when the session cookie is invalid", %{
+      conn: conn,
+      http_request: request
+    } do
+      conn = put_req_cookie(conn, @cookie_name, "invalid_cookie")
+
+      conn
+      |> add_request_headers(request.headers)
+      |> get("/", request.body)
       |> response(400)
     end
 
@@ -79,13 +100,30 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
       http_request: request,
       timeout_token: token
     } do
-      path = "/v1/#{token}/http/80"
+      conn = put_session_cookie(conn, token, "http", 80)
 
       conn
       |> add_request_headers(request.headers)
-      |> get(path, request.body)
+      |> get("/", request.body)
       |> response(408)
     end
+  end
+
+  defp encode_jwt(token, protocol, port) do
+    header = Base.url_encode64(~s({"alg":"none","typ":"JWT"}), padding: false)
+
+    payload =
+      Base.url_encode64(Jason.encode!(%{session: token, protocol: protocol, port: port}),
+        padding: false
+      )
+
+    signature = Base.url_encode64("signature", padding: false)
+
+    Enum.join([header, payload, signature], ".")
+  end
+
+  defp put_session_cookie(conn, token, protocol, port) do
+    put_req_cookie(conn, @cookie_name, encode_jwt(token, protocol, port))
   end
 
   def add_header({header, value}, conn), do: Plug.Conn.put_req_header(conn, header, value)
