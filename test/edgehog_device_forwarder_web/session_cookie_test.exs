@@ -46,7 +46,7 @@ defmodule EdgehogDeviceForwarderWeb.SessionCookieTest do
     end
 
     test "halts with 400 when the fields have the wrong type" do
-      jwt = encode_jwt(%{session: "token", protocol: "http", port: "80"})
+      jwt = encode_jwt(%{session: "token", protocol: "http", port: "not_a_number"})
 
       build_conn() |> put_cookie(jwt) |> assert_invalid_token()
     end
@@ -57,14 +57,6 @@ defmodule EdgehogDeviceForwarderWeb.SessionCookieTest do
       assert conn.halted
       assert conn.status == 400
     end
-  end
-
-  defp encode_jwt(payload) do
-    header = Base.url_encode64(~s({"alg":"none","typ":"JWT"}), padding: false)
-    payload = Base.url_encode64(Jason.encode!(payload), padding: false)
-    signature = Base.url_encode64("signature", padding: false)
-
-    Enum.join([header, payload, signature], ".")
   end
 
   defp put_cookie(conn, jwt), do: Plug.Test.put_req_cookie(conn, @cookie_name, jwt)

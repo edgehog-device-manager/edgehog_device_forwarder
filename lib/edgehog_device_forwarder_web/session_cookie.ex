@@ -19,6 +19,8 @@ defmodule EdgehogDeviceForwarderWeb.SessionCookie do
   use Gettext, backend: EdgehogDeviceForwarderWeb.Gettext
   import Plug.Conn
 
+  alias EdgehogDeviceForwarderWeb.Guardian
+
   @cookie_name "edgehog_forwarder_session"
 
   @type session :: %{
@@ -63,8 +65,11 @@ defmodule EdgehogDeviceForwarderWeb.SessionCookie do
   @spec fetch(Plug.Conn.t()) :: {:ok, session} | {:error, :invalid_token}
   def fetch(conn) do
     with {:ok, jwt} <- fetch_cookie(conn),
-         {:ok, session} <- decode_jwt(jwt) do
+         {:ok, claims} <- Guardian.decode_and_verify(jwt),
+         {:ok, session} <- parse_session(claims) do
       {:ok, session}
+    else
+      _ -> {:error, :invalid_token}
     end
   end
 
@@ -76,28 +81,24 @@ defmodule EdgehogDeviceForwarderWeb.SessionCookie do
     end
   end
 
-  # TODO: we don't actually verify the signature yet. Do it once the flow is in place
-  @spec decode_jwt(String.t()) :: {:ok, session} | {:error, :invalid_token}
-  defp decode_jwt(jwt) do
-    with [_header, payload, _signature] <- String.split(jwt, "."),
-         {:ok, json} <- Base.url_decode64(payload, padding: false),
-         {:ok, data} <- Jason.decode(json),
-         {:ok, session} <- parse_session(data) do
-      {:ok, session}
-    else
-      _ -> {:error, :invalid_token}
+  defp parse_session(%{"session" => session, "protocol" => protocol, "port" => port})
+       when is_binary(session) and is_binary(protocol) do
+    with {:ok, port} <- parse_port(port) do
+      {:ok, %{session: session, protocol: protocol, port: port}}
     end
   end
 
-  @spec parse_session(map) :: {:ok, session} | {:error, :invalid_token}
-  defp parse_session(%{
-         "session" => session,
-         "protocol" => protocol,
-         "port" => port
-       })
-       when is_binary(session) and is_binary(protocol) and is_integer(port) do
-    {:ok, %{session: session, protocol: protocol, port: port}}
+  defp parse_session(_), do: {:error, :invalid_token}
+
+  @spec parse_port(String.t() | integer()) :: {:ok, integer()} | {:error, :invalid_request_port}
+  defp parse_port(port) when is_binary(port) do
+    case Integer.parse(port) do
+      {int, ""} -> {:ok, int}
+      _ -> {:error, :invalid_request_port}
+    end
   end
 
-  defp parse_session(_), do: {:error, :invalid_token}
+  defp parse_port(port) when is_integer(port), do: {:ok, port}
+
+  defp parse_port(_port), do: {:error, :invalid_request_port}
 end

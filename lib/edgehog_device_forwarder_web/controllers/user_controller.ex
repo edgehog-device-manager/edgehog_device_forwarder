@@ -12,6 +12,9 @@ defmodule EdgehogDeviceForwarderWeb.UserController do
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Http, as: HTTP
   alias EdgehogDeviceForwarderWeb.SessionCookie
 
+  @cookie_name "edgehog_forwarder_session"
+  @cookie_opts [http_only: true, secure: true, same_site: "Lax"]
+
   action_fallback EdgehogDeviceForwarderWeb.ErrorController
 
   plug SessionCookie
@@ -25,6 +28,37 @@ defmodule EdgehogDeviceForwarderWeb.UserController do
           | {:error, :request_timeout}
           | {:error, :token_not_found}
           | {:error, {:invalid_protocol, String.t()}}
+  def handle_in(conn, params)
+
+  def handle_in(
+        conn,
+        %{"session" => session, "protocol" => protocol, "port" => port} = _params
+      ) do
+    session_data = %{
+      session: session,
+      protocol: protocol,
+      port: port
+    }
+
+    redirect_uri = %URI{
+      scheme: to_string(conn.scheme),
+      host: conn.host,
+      port: conn.port,
+      path: "/"
+    }
+
+    {:ok, jwt, _claims} =
+      Guardian.encode_and_sign(
+        EdgehogDeviceForwarderWeb.Guardian,
+        "forwarder_session",
+        session_data
+      )
+
+    conn
+    |> Plug.Conn.put_resp_cookie(@cookie_name, jwt, @cookie_opts)
+    |> Phoenix.Controller.redirect(external: URI.to_string(redirect_uri))
+  end
+
   def handle_in(conn, params) do
     session = conn.assigns.session
     protocol = session.protocol |> String.downcase(:ascii)

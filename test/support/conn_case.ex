@@ -37,4 +37,19 @@ defmodule EdgehogDeviceForwarderWeb.ConnCase do
   setup _tags do
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
+
+  @cookie_name "edgehog_forwarder_session"
+
+  def encode_jwt(claims) do
+    {:ok, jwt, _claims} =
+      EdgehogDeviceForwarderWeb.Guardian.encode_and_sign(:forwarder_session, claims)
+
+    jwt
+  end
+
+  def put_session_cookie(conn, token, protocol, port) do
+    jwt = encode_jwt(%{session: token, protocol: protocol, port: port})
+
+    Plug.Test.put_req_cookie(conn, @cookie_name, jwt)
+  end
 end

@@ -1,8 +1,8 @@
 # Copyright 2024 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
-ARG ELIXIR_VERSION=1.15.7
-ARG OTP_VERSION=26
+ARG ELIXIR_VERSION=1.20.4
+ARG OTP_VERSION=29
 
 ARG IMAGE="elixir:${ELIXIR_VERSION}-otp-${OTP_VERSION}-alpine"
 

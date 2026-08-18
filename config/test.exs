@@ -10,6 +10,9 @@ config :edgehog_device_forwarder, EdgehogDeviceForwarderWeb.Endpoint,
 
 config :edgehog_device_forwarder, EdgehogDeviceForwarder.Forwarder, request_timeout: 100
 
+config :edgehog_device_forwarder, EdgehogDeviceForwarderWeb.Guardian,
+  secret_key: "test_secret_key"
+
 config :logger, level: :warning
 
 config :phoenix, :plug_init_mode, :runtime

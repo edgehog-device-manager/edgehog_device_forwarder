@@ -5,6 +5,8 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
   use EdgehogDeviceForwarder.ForwarderCase
   use EdgehogDeviceForwarderWeb.ConnCase
 
+  alias EdgehogDeviceForwarderWeb.SessionCookie
+
   @cookie_name "edgehog_forwarder_session"
 
   describe "handle_in/2" do
@@ -119,23 +121,19 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
       |> get("/", request.body)
       |> response(408)
     end
-  end
 
-  defp encode_jwt(token, protocol, port) do
-    header = Base.url_encode64(~s({"alg":"none","typ":"JWT"}), padding: false)
+    test "redirects to the host and sets a signed cookie", %{conn: conn} do
+      conn = get(conn, "/?session=some_token&protocol=http&port=80")
 
-    payload =
-      Base.url_encode64(Jason.encode!(%{session: token, protocol: protocol, port: port}),
-        padding: false
-      )
+      assert redirected_to(conn, 302) =~ conn.host
 
-    signature = Base.url_encode64("signature", padding: false)
+      assert %{@cookie_name => cookie} = conn.resp_cookies
 
-    Enum.join([header, payload, signature], ".")
-  end
-
-  defp put_session_cookie(conn, token, protocol, port) do
-    put_req_cookie(conn, @cookie_name, encode_jwt(token, protocol, port))
+      assert {:ok, %{session: "some_token", protocol: "http", port: 80}} =
+               build_conn()
+               |> put_req_cookie(@cookie_name, cookie.value)
+               |> SessionCookie.fetch()
+    end
   end
 
   def add_header({header, value}, conn), do: Plug.Conn.put_req_header(conn, header, value)
