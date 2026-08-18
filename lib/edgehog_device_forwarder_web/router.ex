@@ -1,12 +1,8 @@
-# Copyright 2023-2024 SECO Mind Srl
+# Copyright 2023-2026 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarderWeb.Router do
   use EdgehogDeviceForwarderWeb, :router
-
-  scope "/v1/:session/:protocol/:port", EdgehogDeviceForwarderWeb do
-    match :*, "/*path", UserController, :handle_in
-  end
 
   if Application.compile_env(:edgehog_device_forwarder, :dev_routes) do
     import Phoenix.LiveDashboard.Router
@@ -16,5 +12,9 @@ defmodule EdgehogDeviceForwarderWeb.Router do
 
       live_dashboard "/dashboard", metrics: EdgehogDeviceForwarderWeb.Telemetry
     end
+  end
+
+  scope "/", EdgehogDeviceForwarderWeb do
+    match :*, "/*path", UserController, :handle_in
   end
 end

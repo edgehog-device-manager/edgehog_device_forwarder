@@ -1,5 +1,5 @@
 <!---
-  Copyright 2023-2024 SECO Mind Srl
+  Copyright 2023-2026 SECO Mind Srl
   SPDX-License-Identifier: Apache-2.0
 -->
 
@@ -87,11 +87,26 @@ ttyd -W bash
 
 All that's left is to actually perform the http requests!
 
-From any device open a web browser and type in the url `http://server.local:4000/v1/abcd/http/7681`.
+From any device open a web browser and type in the url `http://server.local:4000`.
 You should see `ttyd`'s window in your browser!
 
-> As before, you should replace `server.local` and `abcd`
-> with your server's host address and your connection token respectively.
+> As before, you should replace `server.local` with your server's host address.
+
+To let the server know which device you want to reach, set a cookie named
+`edgehog_forwarder_session` whose value is a JWT carrying the connection token,
+protocol and port in its payload:
+
+```json
+{"session": "abcd", "protocol": "http", "port": 7681}
+```
+
+In this example:
+
+- `abcd` is the connection token;
+- `http` is the protocol;
+- `7681` is the port on which the device process is listening.
+
+The JWT's signature is not currently verified by the server.
 
 ## Known issues and limitations
 

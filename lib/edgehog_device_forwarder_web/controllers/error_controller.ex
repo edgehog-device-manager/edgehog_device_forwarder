@@ -1,4 +1,4 @@
-# Copyright 2024 SECO Mind Srl
+# Copyright 2024-2026 SECO Mind Srl
 # SPDX-License-Identifier: Apache-2.0
 
 defmodule EdgehogDeviceForwarderWeb.ErrorController do
@@ -21,6 +21,14 @@ defmodule EdgehogDeviceForwarderWeb.ErrorController do
 
     conn
     |> send_resp(408, error)
+    |> halt()
+  end
+
+  def call(conn, {:error, :invalid_token}) do
+    error = dgettext("errors", "Invalid session token")
+
+    conn
+    |> send_resp(400, error)
     |> halt()
   end
 
