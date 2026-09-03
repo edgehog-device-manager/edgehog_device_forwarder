@@ -4,3 +4,4 @@
 ExUnit.start()
 
 Mimic.copy(EdgehogDeviceForwarderWeb.Endpoint)
+Mimic.copy(EdgehogDeviceForwarderWeb.ForwarderEndpoint)

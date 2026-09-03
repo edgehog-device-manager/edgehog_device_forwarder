@@ -10,7 +10,15 @@ config :edgehog_device_forwarder, EdgehogDeviceForwarderWeb.Endpoint,
     layout: false
   ],
   pubsub_server: EdgehogDeviceForwarder.PubSub,
-  live_view: [signing_salt: "KhdMSuxy"],
+  live_view: [signing_salt: "KhdMSuxy"]
+
+config :edgehog_device_forwarder, EdgehogDeviceForwarderWeb.ForwarderEndpoint,
+  url: [host: "localhost"],
+  render_errors: [
+    formats: [json: EdgehogDeviceForwarderWeb.ErrorJSON],
+    layout: false
+  ],
+  pubsub_server: EdgehogDeviceForwarder.PubSub,
   device_socket_timeout: :timer.minutes(1)
 
 config :logger, :console,

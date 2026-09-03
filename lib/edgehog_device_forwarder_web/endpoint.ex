@@ -4,8 +4,6 @@
 defmodule EdgehogDeviceForwarderWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :edgehog_device_forwarder
 
-  @timeout_path [__MODULE__, :device_socket_timeout]
-  @timeout Application.compile_env!(:edgehog_device_forwarder, @timeout_path)
   @session_options [
     store: :cookie,
     key: "_edgehog_device_forwarder_key",
@@ -14,13 +12,6 @@ defmodule EdgehogDeviceForwarderWeb.Endpoint do
   ]
 
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
-
-  socket "/device", EdgehogDeviceForwarderWeb.DeviceSocket,
-    websocket: [
-      timeout: @timeout,
-      error_handler: {EdgehogDeviceForwarderWeb.DeviceSocket, :connection_error, []}
-    ],
-    longpoll: false
 
   plug Plug.Static,
     at: "/",
@@ -38,8 +29,6 @@ defmodule EdgehogDeviceForwarderWeb.Endpoint do
 
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
-
-  plug EdgehogDeviceForwarderWeb.BodyParser
 
   plug Plug.MethodOverride
   plug Plug.Head

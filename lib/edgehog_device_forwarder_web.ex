@@ -60,6 +60,15 @@ defmodule EdgehogDeviceForwarderWeb do
     end
   end
 
+  def forwarder_verified_routes do
+    quote do
+      use Phoenix.VerifiedRoutes,
+        endpoint: EdgehogDeviceForwarderWeb.ForwarderEndpoint,
+        router: EdgehogDeviceForwarderWeb.ForwarderRouter,
+        statics: EdgehogDeviceForwarderWeb.static_paths()
+    end
+  end
+
   @doc """
   When used, dispatch to the appropriate controller/view/etc.
   """

@@ -15,8 +15,4 @@ defmodule EdgehogDeviceForwarderWeb.Router do
   end
 
   get "/health", EdgehogDeviceForwarderWeb.HealthController, :status
-
-  scope "/", EdgehogDeviceForwarderWeb do
-    match :*, "/*path", UserController, :handle_in
-  end
 end

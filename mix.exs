@@ -13,7 +13,8 @@ defmodule EdgehogDeviceForwarder.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
-      dialyzer: dialyzer_opts(Mix.env())
+      dialyzer: dialyzer_opts(Mix.env()),
+      listeners: [Phoenix.CodeReloader]
     ]
   end
 

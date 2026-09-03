@@ -23,9 +23,9 @@ defmodule EdgehogDeviceForwarderWeb.ConnCase do
   using do
     quote do
       # The default endpoint for testing
-      @endpoint EdgehogDeviceForwarderWeb.Endpoint
+      @endpoint EdgehogDeviceForwarderWeb.ForwarderEndpoint
 
-      use EdgehogDeviceForwarderWeb, :verified_routes
+      use EdgehogDeviceForwarderWeb, :forwarder_verified_routes
 
       # Import conveniences for testing with connections
       import Plug.Conn

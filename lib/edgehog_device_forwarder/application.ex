@@ -13,7 +13,8 @@ defmodule EdgehogDeviceForwarder.Application do
       {Phoenix.PubSub, name: EdgehogDeviceForwarder.PubSub},
       EdgehogDeviceForwarder.TerminationCallbacks,
       EdgehogDeviceForwarder.Caches,
-      EdgehogDeviceForwarderWeb.Endpoint
+      EdgehogDeviceForwarderWeb.Endpoint,
+      EdgehogDeviceForwarderWeb.ForwarderEndpoint
     ]
 
     opts = [strategy: :one_for_one, name: EdgehogDeviceForwarder.Supervisor]
@@ -23,6 +24,7 @@ defmodule EdgehogDeviceForwarder.Application do
   @impl true
   def config_change(changed, _new, removed) do
     EdgehogDeviceForwarderWeb.Endpoint.config_change(changed, removed)
+    EdgehogDeviceForwarderWeb.ForwarderEndpoint.config_change(changed, removed)
     :ok
   end
 end

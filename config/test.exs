@@ -4,6 +4,11 @@
 import Config
 
 config :edgehog_device_forwarder, EdgehogDeviceForwarderWeb.Endpoint,
+  http: [ip: {127, 0, 0, 1}, port: 4003],
+  secret_key_base: "lmBXbq8UBD2GQThDB8JDjhWjp85D16gaePjO6l5fS+DULN3oLbdZpKtgdRgfBLdn",
+  server: false
+
+config :edgehog_device_forwarder, EdgehogDeviceForwarderWeb.ForwarderEndpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "lmBXbq8UBD2GQThDB8JDjhWjp85D16gaePjO6l5fS+DULN3oLbdZpKtgdRgfBLdn",
   server: false
