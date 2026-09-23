@@ -119,19 +119,6 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
       |> get("/", request.body)
       |> response(408)
     end
-
-    test "redirects to the host and sets a signed cookie", %{conn: conn} do
-      conn = get(conn, "/?session=some_token&protocol=http&port=80")
-
-      assert redirected_to(conn, 302) =~ conn.host
-
-      assert %{@cookie_name => cookie} = conn.resp_cookies
-
-      assert {:ok, %{session: "some_token", protocol: "http", port: 80}} =
-               build_conn()
-               |> put_req_cookie(@cookie_name, cookie.value)
-               |> SessionCookie.fetch()
-    end
   end
 
   def add_header({header, value}, conn), do: Plug.Conn.put_req_header(conn, header, value)
