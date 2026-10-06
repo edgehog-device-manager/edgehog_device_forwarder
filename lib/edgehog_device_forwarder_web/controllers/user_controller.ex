@@ -12,9 +12,6 @@ defmodule EdgehogDeviceForwarderWeb.UserController do
   alias EdgehogDeviceForwarderProto.Edgehog.Device.Forwarder.Http, as: HTTP
   alias EdgehogDeviceForwarderWeb.SessionCookie
 
-  @cookie_name "edgehog_forwarder_session"
-  @cookie_opts [http_only: true, secure: true, same_site: "Lax"]
-
   action_fallback EdgehogDeviceForwarderWeb.ErrorController
 
   plug SessionCookie
@@ -30,42 +27,13 @@ defmodule EdgehogDeviceForwarderWeb.UserController do
           | {:error, {:invalid_protocol, String.t()}}
   def handle_in(conn, params)
 
-  def handle_in(
-        conn,
-        %{"session" => session, "protocol" => protocol, "port" => port} = _params
-      ) do
-    session_data = %{
-      session: session,
-      protocol: protocol,
-      port: port
-    }
-
-    redirect_uri = %URI{
-      scheme: to_string(conn.scheme),
-      host: conn.host,
-      port: conn.port,
-      path: "/"
-    }
-
-    {:ok, jwt, _claims} =
-      Guardian.encode_and_sign(
-        EdgehogDeviceForwarderWeb.Guardian,
-        "forwarder_session",
-        session_data
-      )
-
-    conn
-    |> Plug.Conn.put_resp_cookie(@cookie_name, jwt, @cookie_opts)
-    |> Phoenix.Controller.redirect(external: URI.to_string(redirect_uri))
-  end
-
   def handle_in(conn, params) do
     session = conn.assigns.session
     protocol = session.protocol |> String.downcase(:ascii)
 
     case protocol do
       "http" -> handle_http(conn, params, session)
-      "https" -> handle_http(conn, params, session, secure: true)
+      "https" -> handle_http(conn, params, session, https: true)
       other -> {:error, {:invalid_protocol, other}}
     end
   end
@@ -76,8 +44,11 @@ defmodule EdgehogDeviceForwarderWeb.UserController do
           | {:error, :request_timeout}
           | {:error, :token_not_found}
   defp handle_http(conn, _params, session, opts \\ []) do
+    host = session.host
+    insecure_tls_config = session.insecure_tls_config
+
     with {:ok, port} <- fetch_port(session.port) do
-      request = build_http_request(conn, port)
+      request = build_http_request(conn, host, port, insecure_tls_config)
 
       case Forwarder.http_to_device(session.session, request, opts) do
         {:respond, response} ->
@@ -98,15 +69,17 @@ defmodule EdgehogDeviceForwarderWeb.UserController do
     end
   end
 
-  @spec build_http_request(Plug.Conn.t(), integer) :: HTTP.Request.t()
-  defp build_http_request(conn, port) do
+  @spec build_http_request(Plug.Conn.t(), String.t(), integer, boolean) :: HTTP.Request.t()
+  defp build_http_request(conn, host, port, insecure_tls_config) do
     request = %HTTP.Request{
+      host: host,
       path: Enum.join(conn.path_params["path"], "/"),
       method: conn.method,
       query_string: conn.query_string,
       headers: Map.new(conn.req_headers),
       body: conn.assigns.body,
-      port: port
+      port: port,
+      insecure_tls_config: insecure_tls_config
     }
 
     request

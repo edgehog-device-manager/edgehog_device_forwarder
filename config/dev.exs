@@ -19,6 +19,10 @@ config :edgehog_device_forwarder, EdgehogDeviceForwarderWeb.ForwarderEndpoint,
   secret_key_base: "91eUYzx2/boApWkELv8qAEciRO0kEGh7mIj6i7O9biWh/dELQZlkWJVSA0kQm27X",
   watchers: []
 
+config :edgehog_device_forwarder, EdgehogDeviceForwarderWeb.Guardian,
+  issuer: "edgehog_device_forwarder",
+  secret_key: "91eUYzx2/boApWkELv8qAEciRO0kEGh7mIj6i7O9biWh/dELQZlkWJVSA0kQm27X"
+
 config :edgehog_device_forwarder, dev_routes: true
 
 config :logger, :console, format: "[$level] $message\n"

@@ -29,7 +29,7 @@ defmodule EdgehogDeviceForwarder.Forwarder do
           | {:error, :request_timeout | :token_not_found}
   def http_to_device(token, request, opts \\ []) do
     protocol =
-      case Keyword.fetch(opts, :secure) do
+      case Keyword.fetch(opts, :https) do
         {:ok, true} -> :https
         _ -> :http
       end

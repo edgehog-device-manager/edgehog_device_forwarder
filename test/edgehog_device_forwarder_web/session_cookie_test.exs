@@ -15,10 +15,18 @@ defmodule EdgehogDeviceForwarderWeb.SessionCookieTest do
       conn = build_conn() |> put_cookie(jwt) |> SessionCookie.call([])
 
       refute conn.halted
-      assert %{session: "token", protocol: "http", port: 80} == conn.assigns.session
+
+      assert %{
+               session: "token",
+               protocol: "http",
+               port: 80,
+               host: "127.0.0.1",
+               insecure_tls_config: false
+             } ==
+               conn.assigns.session
     end
 
-    test "halts with 400 when the cookie is missing" do
+    test "halts with 401 when the cookie is missing" do
       assert_invalid_token(build_conn())
     end
 
@@ -51,11 +59,30 @@ defmodule EdgehogDeviceForwarderWeb.SessionCookieTest do
       build_conn() |> put_cookie(jwt) |> assert_invalid_token()
     end
 
+    test "accept the query parameter and sets a signed cookie" do
+      jwt = encode_jwt(%{session: "token", protocol: "http", port: 80})
+
+      conn = build_conn(:get, "/?x-edgehog-forwarder-session=" <> jwt) |> SessionCookie.call([])
+
+      refute conn.halted
+
+      assert %{
+               session: "token",
+               protocol: "http",
+               port: 80,
+               host: "127.0.0.1",
+               insecure_tls_config: false
+             } ==
+               conn.assigns.session
+
+      assert %{@cookie_name => _} = conn.resp_cookies
+    end
+
     defp assert_invalid_token(conn) do
       conn = SessionCookie.call(conn, [])
 
       assert conn.halted
-      assert conn.status == 400
+      assert conn.status == 401
     end
   end
 

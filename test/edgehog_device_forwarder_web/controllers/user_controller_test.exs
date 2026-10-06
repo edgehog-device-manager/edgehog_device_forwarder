@@ -5,8 +5,6 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
   use EdgehogDeviceForwarder.ForwarderCase
   use EdgehogDeviceForwarderWeb.ConnCase
 
-  alias EdgehogDeviceForwarderWeb.SessionCookie
-
   @cookie_name "edgehog_forwarder_session"
 
   describe "handle_in/2" do
@@ -87,17 +85,17 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
       |> response(501)
     end
 
-    test "returns 400 when the session cookie is missing", %{
+    test "returns 401 when the session cookie is missing", %{
       conn: conn,
       http_request: request
     } do
       conn
       |> add_request_headers(request.headers)
       |> get("/", request.body)
-      |> response(400)
+      |> response(401)
     end
 
-    test "returns 400 when the session cookie is invalid", %{
+    test "returns 401 when the session cookie is invalid", %{
       conn: conn,
       http_request: request
     } do
@@ -106,7 +104,7 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
       conn
       |> add_request_headers(request.headers)
       |> get("/", request.body)
-      |> response(400)
+      |> response(401)
     end
 
     test "returns 408 if it reaches timeout", %{
@@ -120,19 +118,6 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
       |> add_request_headers(request.headers)
       |> get("/", request.body)
       |> response(408)
-    end
-
-    test "redirects to the host and sets a signed cookie", %{conn: conn} do
-      conn = get(conn, "/?session=some_token&protocol=http&port=80")
-
-      assert redirected_to(conn, 302) =~ conn.host
-
-      assert %{@cookie_name => cookie} = conn.resp_cookies
-
-      assert {:ok, %{session: "some_token", protocol: "http", port: 80}} =
-               build_conn()
-               |> put_req_cookie(@cookie_name, cookie.value)
-               |> SessionCookie.fetch()
     end
   end
 
