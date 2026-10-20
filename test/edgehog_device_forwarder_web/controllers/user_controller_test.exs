@@ -48,6 +48,26 @@ defmodule EdgehogDeviceForwarderWeb.UserControllerTest do
       assert conn.state == :upgraded
     end
 
+    test "upgrades to websocket when the session JWT is in the query parameter", %{
+      conn: conn,
+      ping_pong_token: token,
+      http_upgrade_request: request
+    } do
+      jwt = encode_jwt(%{session: token, protocol: "http", port: 80})
+
+      conn = add_request_headers(conn, request.headers)
+      conn = %{conn | req_headers: [{"host", "localhost"} | conn.req_headers]}
+
+      conn = get(conn, "/?x-edgehog-forwarder-session=" <> jwt, request.body)
+
+      assert conn.state == :upgraded
+
+      # headers Plug.Cowboy.Handler copies verbatim into cowboy via
+      # set_resp_header/3; a set-cookie here exits with
+      # {:response_error, :invalid_header, ...} and kills the handshake
+      refute "set-cookie" in for({k, _} <- conn.resp_headers, do: String.downcase(k))
+    end
+
     test "returns 404 when no device is connected with the given token", %{
       conn: conn,
       http_request: request

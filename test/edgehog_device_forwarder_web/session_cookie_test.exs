@@ -78,6 +78,25 @@ defmodule EdgehogDeviceForwarderWeb.SessionCookieTest do
       assert %{@cookie_name => _} = conn.resp_cookies
     end
 
+    test "assigns the session from the query parameter but sets no response cookie on a WebSocket upgrade" do
+      jwt = encode_jwt(%{session: "token", protocol: "http", port: 80})
+
+      conn =
+        build_conn(:get, "/ws?x-edgehog-forwarder-session=" <> jwt)
+        |> put_req_header("upgrade", "websocket")
+        |> SessionCookie.call([])
+
+      refute conn.halted
+
+      assert %{session: "token", protocol: "http", port: 80} = conn.assigns.session
+
+      # Plug renders resp_cookies into a set-cookie header during
+      # upgrade_adapter, and Plug.Cowboy feeds it to cowboy_req:set_resp_header/3,
+      # which exits on
+      # set-cookie -> process crash -> browser "can't establish a connection to the server"
+      assert conn.resp_cookies == %{}
+    end
+
     defp assert_invalid_token(conn) do
       conn = SessionCookie.call(conn, [])
 

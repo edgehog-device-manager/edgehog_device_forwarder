@@ -46,9 +46,12 @@ defmodule EdgehogDeviceForwarderWeb.SessionCookie do
   defp maybe_fetch_session(%{query_params: %{"x-edgehog-forwarder-session" => jwt}} = conn) do
     with {:ok, claims} <- Guardian.decode_and_verify(jwt),
          {:ok, session} <- parse_session(claims) do
-      conn
-      |> assign(:session, session)
-      |> put_resp_cookie(@cookie_name, jwt, @cookie_opts)
+      conn = assign(conn, :session, session)
+
+      case get_req_header(conn, "upgrade") do
+        ["websocket"] -> conn
+        _ -> put_resp_cookie(conn, @cookie_name, jwt, @cookie_opts)
+      end
     else
       _ ->
         error = dgettext("errors", "Invalid session token")
