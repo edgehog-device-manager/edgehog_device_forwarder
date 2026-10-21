@@ -15,10 +15,18 @@ defmodule EdgehogDeviceForwarderWeb.SessionCookieTest do
       conn = build_conn() |> put_cookie(jwt) |> SessionCookie.call([])
 
       refute conn.halted
-      assert %{session: "token", protocol: "http", port: 80} == conn.assigns.session
+
+      assert %{
+               session: "token",
+               protocol: "http",
+               port: 80,
+               host: "127.0.0.1",
+               insecure_tls_config: false
+             } ==
+               conn.assigns.session
     end
 
-    test "halts with 400 when the cookie is missing" do
+    test "halts with 401 when the cookie is missing" do
       assert_invalid_token(build_conn())
     end
 
@@ -51,11 +59,49 @@ defmodule EdgehogDeviceForwarderWeb.SessionCookieTest do
       build_conn() |> put_cookie(jwt) |> assert_invalid_token()
     end
 
+    test "accept the query parameter and sets a signed cookie" do
+      jwt = encode_jwt(%{session: "token", protocol: "http", port: 80})
+
+      conn = build_conn(:get, "/?x-edgehog-forwarder-session=" <> jwt) |> SessionCookie.call([])
+
+      refute conn.halted
+
+      assert %{
+               session: "token",
+               protocol: "http",
+               port: 80,
+               host: "127.0.0.1",
+               insecure_tls_config: false
+             } ==
+               conn.assigns.session
+
+      assert %{@cookie_name => _} = conn.resp_cookies
+    end
+
+    test "assigns the session from the query parameter but sets no response cookie on a WebSocket upgrade" do
+      jwt = encode_jwt(%{session: "token", protocol: "http", port: 80})
+
+      conn =
+        build_conn(:get, "/ws?x-edgehog-forwarder-session=" <> jwt)
+        |> put_req_header("upgrade", "websocket")
+        |> SessionCookie.call([])
+
+      refute conn.halted
+
+      assert %{session: "token", protocol: "http", port: 80} = conn.assigns.session
+
+      # Plug renders resp_cookies into a set-cookie header during
+      # upgrade_adapter, and Plug.Cowboy feeds it to cowboy_req:set_resp_header/3,
+      # which exits on
+      # set-cookie -> process crash -> browser "can't establish a connection to the server"
+      assert conn.resp_cookies == %{}
+    end
+
     defp assert_invalid_token(conn) do
       conn = SessionCookie.call(conn, [])
 
       assert conn.halted
-      assert conn.status == 400
+      assert conn.status == 401
     end
   end
 

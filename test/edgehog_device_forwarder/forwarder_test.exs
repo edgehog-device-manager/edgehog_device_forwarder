@@ -45,7 +45,7 @@ defmodule EdgehogDeviceForwarder.ForwarderTest do
       }
 
       assert {{:upgrade, :websocket}, _response, %{socket_id: _socket_id, device: _device_socket}} =
-               Forwarder.http_to_device(ping_pong_token, request, secure: true)
+               Forwarder.http_to_device(ping_pong_token, request, https: true)
     end
 
     test "returns {:error, :request_timeout} if the device doesn't respond in time", %{

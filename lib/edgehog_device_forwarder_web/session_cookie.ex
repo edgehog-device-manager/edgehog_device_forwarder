@@ -22,11 +22,14 @@ defmodule EdgehogDeviceForwarderWeb.SessionCookie do
   alias EdgehogDeviceForwarderWeb.Guardian
 
   @cookie_name "edgehog_forwarder_session"
+  @cookie_opts [http_only: true, secure: true, same_site: "Lax"]
 
   @type session :: %{
           session: String.t(),
           protocol: String.t(),
-          port: integer()
+          host: String.t(),
+          port: integer(),
+          insecure_tls_config: boolean()
         }
 
   @impl true
@@ -40,10 +43,24 @@ defmodule EdgehogDeviceForwarderWeb.SessionCookie do
     |> maybe_fetch_session()
   end
 
-  defp maybe_fetch_session(
-         %{query_params: %{"port" => _, "protocol" => _, "session" => _}} = conn
-       ),
-       do: conn
+  defp maybe_fetch_session(%{query_params: %{"x-edgehog-forwarder-session" => jwt}} = conn) do
+    with {:ok, claims} <- Guardian.decode_and_verify(jwt),
+         {:ok, session} <- parse_session(claims) do
+      conn = assign(conn, :session, session)
+
+      case get_req_header(conn, "upgrade") do
+        ["websocket"] -> conn
+        _ -> put_resp_cookie(conn, @cookie_name, jwt, @cookie_opts)
+      end
+    else
+      _ ->
+        error = dgettext("errors", "Invalid session token")
+
+        conn
+        |> send_resp(401, error)
+        |> halt()
+    end
+  end
 
   defp maybe_fetch_session(conn) do
     case fetch(conn) do
@@ -54,7 +71,7 @@ defmodule EdgehogDeviceForwarderWeb.SessionCookie do
         error = dgettext("errors", "Invalid session token")
 
         conn
-        |> send_resp(400, error)
+        |> send_resp(401, error)
         |> halt()
     end
   end
@@ -81,10 +98,20 @@ defmodule EdgehogDeviceForwarderWeb.SessionCookie do
     end
   end
 
-  defp parse_session(%{"session" => session, "protocol" => protocol, "port" => port})
+  defp parse_session(%{"session" => session, "protocol" => protocol, "port" => port} = args)
        when is_binary(session) and is_binary(protocol) do
     with {:ok, port} <- parse_port(port) do
-      {:ok, %{session: session, protocol: protocol, port: port}}
+      host = Map.get(args, "host", "127.0.0.1")
+      insecure_tls_config = Map.get(args, "insecure_tls_config", false)
+
+      {:ok,
+       %{
+         session: session,
+         protocol: protocol,
+         host: host,
+         port: port,
+         insecure_tls_config: insecure_tls_config
+       }}
     end
   end
 
